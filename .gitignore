@@ -1,0 +1,71 @@
+# ============================
+# Python
+# ============================
+
+# Byte-compiled / optimized
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+*.egg
+.eggs/
+
+# Virtual environments
+.env
+.venv
+venv/
+ENV/
+*.env
+
+# uv caches
+.uv/
+
+# Ruff cache
+.ruff_cache/
+
+# ============================
+# Docker
+# ============================
+
+# Ignore Docker Compose override files
+docker-compose.override.yml
+
+# ============================
+# pre-commit
+# ============================
+
+# pre-commit hook logs
+.pre-commit-config.yaml~
+.pre-commit/
+.pre-commit-cache/
+
+# ============================
+# Editor / IDE files
+# ============================
+
+# VS Code
+.vscode/
+.code-workspace
+
+# PyCharm / IntelliJ
+.idea/
+
+# Others
+*.swp
+*.swo
+*~
+.DS_Store
+
+# If using a src/ layout, ignore compiled artifacts there too
+src/**/*.py[cod]
+
+# ============================
+# Logs
+# ============================
+
+*.log
+logs/

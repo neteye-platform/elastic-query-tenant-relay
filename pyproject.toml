@@ -1,0 +1,22 @@
+[project]
+name = "elastic-query-tenant-relay"
+dynamic = ["version"]
+description = "An application that queries the Elasticsearch APIs and caches the results, exposed by a REST API."
+readme = "README.md"
+authors = [
+    { name = "Luigi Miazzo", email = "luigi.miazzo@wuerth-it.com" },
+    { name = "Davide Sbetti", email = "davide.sbetti@wuerth-it.com" },
+]
+requires-python = ">=3.14"
+dependencies = []
+
+[dependency-groups]
+dev = ["ruff>=0.15.2", "ty>=0.0.18", "prek>=0.3.3"]
+
+[tool.ruff]
+target-version = "py314"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = []
