@@ -5,6 +5,9 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   # TODO: Move to pre-commit once the official hook is released: https://github.com/astral-sh/ty/issues/269
   ty:
