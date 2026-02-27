@@ -1,5 +1,5 @@
 [project]
-name = "elastic-query-tenant-relay"
+name = "eqtr"
 dynamic = ["version"]
 description = "An application that queries the Elasticsearch APIs and caches the results, exposed by a REST API."
 readme = "README.md"
@@ -8,10 +8,30 @@ authors = [
     { name = "Davide Sbetti", email = "davide.sbetti@wuerth-it.com" },
 ]
 requires-python = ">=3.14"
-dependencies = []
-
+dependencies = [
+    "apscheduler==3.11.2",
+    "elastic-apm==6.25.0",
+    "elasticsearch==9.3.0",
+    "fastapi==0.133.0",
+    "pydantic-settings==2.13.1",
+    "uvicorn==0.41.0",
+]
 [dependency-groups]
 dev = ["ruff>=0.15.2", "ty>=0.0.18", "prek>=0.3.3"]
+
+
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.version.raw-options]
+version_scheme = "no-guess-dev"
+
+[project.scripts]
+eqtr = "eqtr:main"
 
 [tool.ruff]
 target-version = "py314"
