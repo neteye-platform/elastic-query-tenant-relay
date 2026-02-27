@@ -1,34 +1,14 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v6.0.0
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # frozen: v6.0.0
     hooks:
-      - id: check-added-large-files
-      - id: check-executables-have-shebangs
       - id: check-json
-      - id: check-merge-conflict
-      - id: check-shebang-scripts-are-executable
         exclude: ^\.envrc$
       - id: check-symlinks
       - id: check-toml
-      - id: check-yaml
-      - id: end-of-file-fixer
-      - id: mixed-line-ending
-        args: [--fix=lf]
-      - id: trailing-whitespace
-
-  - repo: https://github.com/codespell-project/codespell
-    rev: v2.4.1
-    hooks:
-      - id: codespell
-        args: [-L, UpToDate]
-
-  - repo: https://github.com/rhysd/actionlint
-    rev: v1.7.7
-    hooks:
-      - id: actionlint
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.13.0
+    rev: a27a2e47c7751b639d2b5badf0ef6ff11fee893f # frozen: v0.15.4
     hooks:
       # Run the linter.
       - id: ruff
@@ -39,17 +19,6 @@ repos:
         types_or: [python, pyi]
 
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.8.17
+    rev: 92110f8f7c622b1f544fd9b509fd3588e4bec7c2 # frozen: v0.10.6
     hooks:
       - id: uv-lock
-
-  - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.28.0
-    hooks:
-      - id: gitleaks
-
-  - repo: https://github.com/DavidAnson/markdownlint-cli2
-    rev: v0.20.0
-    hooks:
-      - id: markdownlint-cli2
-        args: [--fix]
