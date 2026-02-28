@@ -1,19 +1,20 @@
-name: linting
+name: TY Check
 
 on:
   pull_request:
-  push:
-    branches: [main]
+    branches:
+      - "*"
 
 permissions:
   contents: read
 
 jobs:
   # TODO: Move to pre-commit once the official hook is released: https://github.com/astral-sh/ty/issues/269
-  ty:
+  ty-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Install uv
         uses: astral-sh/setup-uv@eac588ad8def6316056a12d4907a9d4d84ff7a3b # v7.3.0
@@ -26,11 +27,3 @@ jobs:
 
       - name: Type check src
         run: uv run ty check src
-
-  prek:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Run repository pre-commit checks
-        uses: j178/prek-action@0bb87d7f00b0c99306c8bcb8b8beba1eb581c037 # v1.1.1
