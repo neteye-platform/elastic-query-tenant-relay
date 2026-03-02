@@ -17,9 +17,9 @@ dependencies = [
     "pydantic-settings==2.13.1",
     "uvicorn==0.41.0",
 ]
-
 [dependency-groups]
-dev = ["ruff>=0.15.2", "ty>=0.0.18"]
+dev = ["ruff>=0.15.2", "ty>=0.0.18", "prek>=0.3.3"]
+
 
 [build-system]
 requires = ["hatchling", "hatch-vcs"]
