@@ -37,6 +37,10 @@ RUN apt-get update \
     curl=7.88.1-10+deb12u14 \
     && rm -rf /var/lib/apt/lists/*
 
+# Create a non-root user to run the app
+RUN useradd -m appuser
+USER appuser
+
 COPY --from=builder /app/.venv /app/.venv
 
 # Place executables in the environment at the front of the path

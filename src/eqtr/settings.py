@@ -1,24 +1,47 @@
 """Application settings management using Pydantic."""
 
+import logging
 from pathlib import Path
 
-from elasticsearch import Elasticsearch
+from elastic_transport.client_utils import DefaultType
 from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+logger = logging.getLogger(__name__)  # custom logger is not available in this module, using standard logging
 
-class _ElasticsearchSettings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="ES_", extra="ignore")
 
-    url: str = Field(..., env="URL")
+class _CACertsFileSettings:
+    ca_certs_file_path: str | DefaultType = DefaultType.value
+
+    @field_validator("ca_certs_file_path")
+    @classmethod
+    def validate_ca_certs_file_path(cls, value: str | DefaultType) -> str | DefaultType:
+        """Validate that the provided CA certs file path exists and is a file."""
+        if isinstance(value, DefaultType):
+            return value
+
+        as_path = Path(value)
+
+        if not as_path.exists():
+            msg = f"CA certs file path does not exist: {value}"
+            raise ValueError(msg)
+        if not as_path.is_file():
+            msg = f"CA certs file path is not a file: {value}"
+            raise ValueError(msg)
+
+        return value
+
+
+class _ElasticsearchSettings(_CACertsFileSettings, BaseSettings):
+    model_config = SettingsConfigDict(env_prefix="ES_")
+
+    url: str = Field(...)
     api_key: str = Field(...)
-    ca_file_path: Path = Path("/var/lib/eqtr/elasticsearch-ca.cer")
 
     query_fields: list[str] = Field(
         ["@timestamp", "kibana.alert.rule.name", "kibana.alert.severity"],
         validate_default=False,
     )
-
     query_match_workflow_status: str = "open"
 
     @field_validator("query_fields", mode="before")
@@ -30,35 +53,50 @@ class _ElasticsearchSettings(BaseSettings):
         msg = "query_fields must be a comma-separated string"
         raise ValueError(msg)
 
-    @model_validator(mode="after")
-    def check_ca_file_exists(self) -> _ElasticsearchSettings:
-        """Check if the CA file exists."""
-        if not self.ca_file_path.is_file():
-            msg = f"CA file not found at {self.ca_file_path}"
-            raise ValueError(msg)
-        return self
-
 
 class _KibanaSettings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="KBN_", extra="ignore")
+    model_config = SettingsConfigDict(env_prefix="KBN_")
 
     space: str = Field(...)
 
 
-class _APMSettings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="APM_", extra="ignore")
+class _APMSettings(_CACertsFileSettings, BaseSettings):
+    model_config = SettingsConfigDict(env_prefix="APM_")
 
-    enabled: bool = True
+    enabled: bool | None = None
 
-    service_name: str = Field(...)
-    secret_token: str = Field(...)
-    server_url: str = Field(...)
+    service_name: str | None = None
+    secret_token: str | None = None
+    server_url: str | None = None
+
+    @model_validator(mode="after")
+    def check_apm_settings(self) -> _APMSettings:
+        """Validate that if APM is enabled, all required settings are provided.
+
+        Also, if enable is not explicitly set, if any of the APM settings are provided, we will assume APM is enabled.
+        """
+        self.enabled = self.enabled or any([self.service_name, self.secret_token, self.server_url])
+
+        if self.enabled:
+            missing_fields = []
+            if not self.service_name:
+                missing_fields.append("service_name")
+            if not self.secret_token:
+                missing_fields.append("secret_token")
+            if not self.server_url:
+                missing_fields.append("server_url")
+
+            if missing_fields:
+                msg = f"APM is enabled but the following fields are missing: {', '.join(missing_fields)}"
+                raise ValueError(msg)
+
+        return self
 
 
 class MainSettings(BaseSettings):
     """Main application settings."""
 
-    model_config = SettingsConfigDict(env_prefix="EQTR_", extra="ignore")
+    model_config = SettingsConfigDict(env_prefix="EQTR_")
 
     elasticsearch: _ElasticsearchSettings = _ElasticsearchSettings()
     kibana: _KibanaSettings = _KibanaSettings()
@@ -70,29 +108,3 @@ class MainSettings(BaseSettings):
 
 
 SETTINGS = MainSettings()
-
-
-ca_certs = SETTINGS.elasticsearch.ca_file_path.read_text()
-if not ca_certs:
-    msg = f"CA certificate file at {SETTINGS.elasticsearch.ca_file_path} is empty or cannot be read."
-    raise ValueError(msg)
-
-ELASTICSEARCH_CLIENT = Elasticsearch(
-    SETTINGS.elasticsearch.url,
-    api_key=SETTINGS.elasticsearch.api_key,
-    ca_certs=ca_certs,
-)
-
-
-APM_CLIENT = None
-
-if SETTINGS.apm.enabled:
-    from elasticapm.contrib.starlette import make_apm_client
-
-    APM_CLIENT = make_apm_client(
-        {
-            "SERVICE_NAME": SETTINGS.apm.service_name,
-            "SECRET_TOKEN": SETTINGS.apm.secret_token,
-            "SERVER_URL": SETTINGS.apm.server_url,
-        },
-    )

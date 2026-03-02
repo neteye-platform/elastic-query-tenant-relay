@@ -4,7 +4,8 @@ import logging
 
 from elasticapm.handlers.logging import LoggingHandler
 
-from eqtr.settings import APM_CLIENT, SETTINGS
+from eqtr.clients import APM_CLIENT
+from eqtr.settings import SETTINGS
 
 APM_FORMATTER = logging.Formatter(
     "%(asctime)s %(levelname)s %(message)s trace.id=%(elasticapm_trace_id)s transaction.id=%(elasticapm_transaction_id)s",  # noqa: E501

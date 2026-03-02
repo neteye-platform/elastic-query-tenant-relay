@@ -1,7 +1,6 @@
 """REST API for Kibana alerts."""
 
 import importlib.metadata
-import os
 from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, Annotated
 
@@ -13,11 +12,12 @@ from elasticsearch.dsl.types import MatchQuery
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.security import HTTPBearer
 
+from eqtr.clients import APM_CLIENT, ELASTICSEARCH_CLIENT
 from eqtr.log import get_logger
-from eqtr.settings import APM_CLIENT, ELASTICSEARCH_CLIENT, SETTINGS
+from eqtr.settings import SETTINGS
 
 if TYPE_CHECKING:
-    import types
+    from collections.abc import AsyncIterator
 
 logger = get_logger(__name__)
 
@@ -29,7 +29,7 @@ async def refresh_data() -> None:
     # Query elasticsearch (keeping pagination in mind if there are many alerts)
     search = (
         Search(using=ELASTICSEARCH_CLIENT)
-        .index(f".alerts-security.alerts-{os.environ['KIBANA_SPACE']}")
+        .index(f".alerts-security.alerts-{SETTINGS.kibana.space}")
         .query(
             Match(
                 "kibana.alert.workflow_status",
@@ -48,7 +48,7 @@ async def refresh_data() -> None:
 
 
 @asynccontextmanager
-async def _lifespan(_: FastAPI) -> types.AsyncGeneratorType:
+async def _lifespan(_: FastAPI) -> AsyncIterator[None]:
     scheduler = AsyncIOScheduler()
     scheduler.add_job(refresh_data, "interval", minutes=SETTINGS.refresh_interval_minutes)
     scheduler.start()
@@ -86,7 +86,7 @@ def verify_token(request: Request) -> bool:
 @app.get("/kibana/alerts")
 async def kibana_alerts(_: Annotated[str, Depends(verify_token)]) -> list[dict]:
     """Return cached Kibana alerts."""
-    return app.state.cached_data.get("alerts", [])
+    return app.state.cached_data
 
 
 @app.get("/health")
