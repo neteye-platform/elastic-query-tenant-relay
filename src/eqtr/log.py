@@ -2,14 +2,30 @@
 
 import logging
 
-from elasticapm.handlers.logging import LoggingHandler
+from elasticapm.handlers.logging import LoggingFilter
 
-from eqtr.clients import APM_CLIENT
 from eqtr.settings import SETTINGS
 
-APM_FORMATTER = logging.Formatter(
-    "%(asctime)s %(levelname)s %(message)s trace.id=%(elasticapm_trace_id)s transaction.id=%(elasticapm_transaction_id)s",  # noqa: E501
-)
+
+def _has_filter_type(logger: logging.Logger, filter_type: type[logging.Filter]) -> bool:
+    return any(isinstance(current_filter, filter_type) for current_filter in logger.filters)
+
+
+def _resolve_console_handlers() -> list[logging.Handler]:
+    uvicorn_error_logger = logging.getLogger("uvicorn.error")
+    if uvicorn_error_logger.handlers:
+        return list(uvicorn_error_logger.handlers)
+
+    uvicorn_logger = logging.getLogger("uvicorn")
+    if uvicorn_logger.handlers:
+        return list(uvicorn_logger.handlers)
+
+    return [logging.StreamHandler()]
+
+
+def _configure_apm_log_correlation(logger: logging.Logger) -> None:
+    if SETTINGS.apm.enabled and not _has_filter_type(logger, LoggingFilter):
+        logger.addFilter(LoggingFilter())
 
 
 def get_logger(logger_name: str) -> logging.Logger:
@@ -17,12 +33,11 @@ def get_logger(logger_name: str) -> logging.Logger:
     logger = logging.getLogger(logger_name)
     logger.setLevel(SETTINGS.log_level.upper())
 
-    uvicorn_logger = logging.getLogger("uvicorn")
-    logger.handlers = uvicorn_logger.handlers
-    logger.propagate = False
+    logger.handlers = []
+    for handler in _resolve_console_handlers():
+        logger.addHandler(handler)
 
-    if SETTINGS.apm.enabled:
-        apm_handler = LoggingHandler(client=APM_CLIENT)
-        apm_handler.setFormatter(APM_FORMATTER)
-        logger.addHandler(apm_handler)
+    _configure_apm_log_correlation(logger)
+
+    logger.propagate = False
     return logger

@@ -65,8 +65,10 @@ class _APMSettings(_CACertsFileSettings, BaseSettings):
     enabled: bool | None = None
 
     service_name: str | None = None
+    service_node_name: str | None = None
     secret_token: str | None = None
     server_url: str | None = None
+    environment: str | None = None
 
     @model_validator(mode="after")
     def check_apm_settings(self) -> _APMSettings:
@@ -74,7 +76,7 @@ class _APMSettings(_CACertsFileSettings, BaseSettings):
 
         Also, if enable is not explicitly set, if any of the APM settings are provided, we will assume APM is enabled.
         """
-        self.enabled = self.enabled or any([self.service_name, self.secret_token, self.server_url])
+        self.enabled = self.enabled or any([self.service_name, self.secret_token, self.server_url, self.environment])
 
         if self.enabled:
             missing_fields = []
@@ -84,9 +86,12 @@ class _APMSettings(_CACertsFileSettings, BaseSettings):
                 missing_fields.append("secret_token")
             if not self.server_url:
                 missing_fields.append("server_url")
+            if not self.environment:
+                missing_fields.append("environment")
 
+            missing_envs_str = ", ".join([f"APM_{field.upper()}" for field in missing_fields])
             if missing_fields:
-                msg = f"APM is enabled but the following fields are missing: {', '.join(missing_fields)}"
+                msg = f"APM is enabled but the following environment variables are missing: {missing_envs_str}"
                 raise ValueError(msg)
 
         return self
