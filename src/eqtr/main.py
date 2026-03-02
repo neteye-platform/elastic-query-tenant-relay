@@ -11,8 +11,6 @@ logger = get_logger(__name__)
 
 def main() -> None:
     """Entry point for the application."""
-    logger.info("Starting application!")
-
     uvicorn.run(app, host="0.0.0.0", port=8000, log_level=SETTINGS.log_level)  # noqa: S104
 
 

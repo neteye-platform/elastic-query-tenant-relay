@@ -16,6 +16,11 @@ def get_logger(logger_name: str) -> logging.Logger:
     """Get a logger instance."""
     logger = logging.getLogger(logger_name)
     logger.setLevel(SETTINGS.log_level.upper())
+
+    uvicorn_logger = logging.getLogger("uvicorn")
+    logger.handlers = uvicorn_logger.handlers
+    logger.propagate = False
+
     if SETTINGS.apm.enabled:
         apm_handler = LoggingHandler(client=APM_CLIENT)
         apm_handler.setFormatter(APM_FORMATTER)
