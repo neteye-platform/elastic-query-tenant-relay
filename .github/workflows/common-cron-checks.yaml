@@ -13,3 +13,4 @@ permissions:
 jobs:
   common-cron-checks:
     uses: neteye-platform/repo-commons/.github/workflows/common-cron-checks.yaml@main
+    secrets: inherit

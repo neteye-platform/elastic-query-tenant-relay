@@ -14,3 +14,4 @@ permissions:
 jobs:
   common-pull-request-checks:
     uses: neteye-platform/repo-commons/.github/workflows/common-pull-request-checks.yaml@main
+    secrets: inherit

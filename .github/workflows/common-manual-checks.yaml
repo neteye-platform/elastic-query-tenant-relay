@@ -12,3 +12,4 @@ permissions:
 jobs:
   common-manual-checks:
     uses: neteye-platform/repo-commons/.github/workflows/common-manual-checks.yaml@main
+    secrets: inherit
