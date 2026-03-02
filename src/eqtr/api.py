@@ -24,26 +24,30 @@ logger = get_logger(__name__)
 
 async def refresh_data() -> None:
     """Fetch data from Elasticsearch and update the cache."""
-    logger.info("Refreshing data from Elasticsearch...")
+    logger.info("Refreshing data from Elasticsearch.")
 
-    # Query elasticsearch (keeping pagination in mind if there are many alerts)
-    search = (
-        Search(using=ELASTICSEARCH_CLIENT)
-        .index(f".alerts-security.alerts-{SETTINGS.kibana.space}")
-        .query(
-            Match(
-                "kibana.alert.workflow_status",
-                MatchQuery(query=SETTINGS.elasticsearch.query_match_workflow_status),
-            ),
+    try:
+        search = (
+            Search(using=ELASTICSEARCH_CLIENT)
+            .index(f".alerts-security.alerts-{SETTINGS.kibana.space}")
+            .query(
+                Match(
+                    "kibana.alert.workflow_status",
+                    MatchQuery(query=SETTINGS.elasticsearch.query_match_workflow_status),
+                ),
+            )
+            .source(fields=list(SETTINGS.elasticsearch.query_fields))
         )
-        .source(fields=list(SETTINGS.elasticsearch.query_fields))
-    )
-    search = search.params(ignore_unavailable=True)
+        search = search.params(ignore_unavailable=True)
+        result = search.scan()
+        app.state.cached_data = [hit.to_dict() for hit in result]
+        app.state.health_status = "ok"
+    except Exception:
+        app.state.cached_data = []
+        app.state.health_status = "degraded"
+        logger.exception("Failed to refresh data from Elasticsearch. Cache invalidated.")
+        return
 
-    # Get results
-    result = search.scan()
-
-    app.state.cached_data = [hit.to_dict() for hit in result]
     logger.debug("Cache of alerts finished", extra={"num_alerts": len(app.state.cached_data)})
 
 
@@ -62,6 +66,8 @@ async def _lifespan(_: FastAPI) -> AsyncIterator[None]:
 
 app = FastAPI(lifespan=_lifespan)
 security = HTTPBearer()
+app.state.cached_data = []
+app.state.health_status = "ok"
 
 if SETTINGS.apm.enabled:
     app.add_middleware(ElasticAPM, client=APM_CLIENT)  # type: ignore[arg-type]
@@ -86,10 +92,17 @@ def verify_token(request: Request) -> bool:
 @app.get("/kibana/alerts")
 async def kibana_alerts(_: Annotated[str, Depends(verify_token)]) -> list[dict]:
     """Return cached Kibana alerts."""
+    if app.state.health_status != "ok":
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Service degraded")
+
     return app.state.cached_data
 
 
 @app.get("/health")
 async def health() -> dict[str, str]:
     """Health check endpoint."""
-    return {"status": "ok", "version": importlib.metadata.version("eqtr"), "tagline": "You know, for alerts!"}
+    return {
+        "status": app.state.health_status,
+        "version": importlib.metadata.version("eqtr"),
+        "tagline": "You know, for alerts!",
+    }
