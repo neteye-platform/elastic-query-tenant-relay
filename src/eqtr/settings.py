@@ -3,7 +3,6 @@
 import logging
 from pathlib import Path
 
-from elastic_transport.client_utils import DefaultType
 from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -11,13 +10,13 @@ logger = logging.getLogger(__name__)  # custom logger is not available in this m
 
 
 class _CACertsFileSettings:
-    ca_certs_file_path: str | DefaultType = DefaultType.value
+    ca_certs_file_path: str | None = None
 
     @field_validator("ca_certs_file_path")
     @classmethod
-    def validate_ca_certs_file_path(cls, value: str | DefaultType) -> str | DefaultType:
+    def validate_ca_certs_file_path(cls, value: str | None) -> str | None:
         """Validate that the provided CA certs file path exists and is a file."""
-        if isinstance(value, DefaultType):
+        if value is None:
             return value
 
         as_path = Path(value)
