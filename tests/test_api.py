@@ -97,7 +97,7 @@ def test_kibana_alerts_returns_cached_data_list(api_module) -> None:
     api_module.app.state.cached_data = cached_data
     api_module.app.state.health_status = "ok"
 
-    result = asyncio.run(api_module.kibana_alerts("token"))
+    result = asyncio.run(api_module.kibana_alerts("token", None, None, None))
 
     assert result == cached_data
 
@@ -107,7 +107,75 @@ def test_kibana_alerts_returns_500_when_service_is_degraded(api_module) -> None:
     api_module.app.state.cached_data = []
 
     with pytest.raises(HTTPException, match="Service degraded"):
-        asyncio.run(api_module.kibana_alerts("token"))
+        asyncio.run(api_module.kibana_alerts("token", None, None, None))
+
+
+def test_kibana_alerts_filters_requested_fields(api_module) -> None:
+    api_module.app.state.health_status = "ok"
+    api_module.app.state.cached_data = [
+        {
+            "@timestamp": "2026-03-02T00:00:00Z",
+            "kibana": {"alert": {"rule": {"name": "Rule 1"}, "severity": "high"}},
+        },
+    ]
+
+    result = asyncio.run(api_module.kibana_alerts("token", "@timestamp,kibana.alert.severity", None, None))
+
+    assert result == [
+        {
+            "@timestamp": "2026-03-02T00:00:00Z",
+            "kibana": {"alert": {"severity": "high"}},
+        },
+    ]
+
+
+def test_kibana_alerts_rejects_unsupported_fields(api_module) -> None:
+    api_module.app.state.health_status = "ok"
+    api_module.app.state.cached_data = []
+
+    with pytest.raises(HTTPException, match="Unsupported fields"):
+        asyncio.run(api_module.kibana_alerts("token", "kibana.alert.unknown", None, None))
+
+
+def test_kibana_alerts_filters_by_rule_name(api_module) -> None:
+    api_module.app.state.health_status = "ok"
+    api_module.app.state.cached_data = [
+        {"kibana": {"alert": {"rule": {"name": "Rule 1"}, "severity": "high"}}},
+        {"kibana": {"alert": {"rule": {"name": "Rule 2"}, "severity": "low"}}},
+    ]
+
+    result = asyncio.run(api_module.kibana_alerts("token", None, "Rule 2", None))
+
+    assert result == [{"kibana": {"alert": {"rule": {"name": "Rule 2"}, "severity": "low"}}}]
+
+
+def test_kibana_alerts_filters_by_rule_name_and_severity(api_module) -> None:
+    api_module.app.state.health_status = "ok"
+    api_module.app.state.cached_data = [
+        {"kibana": {"alert": {"rule": {"name": "Rule 1"}, "severity": "high"}}},
+        {"kibana": {"alert": {"rule": {"name": "Rule 1"}, "severity": "low"}}},
+    ]
+
+    result = asyncio.run(api_module.kibana_alerts("token", None, "Rule 1", "high"))
+
+    assert result == [{"kibana": {"alert": {"rule": {"name": "Rule 1"}, "severity": "high"}}}]
+
+
+def test_kibana_alerts_rejects_empty_filter_values(api_module) -> None:
+    api_module.app.state.health_status = "ok"
+    api_module.app.state.cached_data = []
+
+    with pytest.raises(HTTPException, match="rule_name must be non-empty"):
+        asyncio.run(api_module.kibana_alerts("token", None, "   ", None))
+
+
+def test_kibana_alerts_rejects_rule_filter_if_field_not_available(api_module, monkeypatch) -> None:
+    api_module.app.state.health_status = "ok"
+    api_module.app.state.cached_data = []
+    monkeypatch.setattr(api_module, "ALERT_QUERY_FIELDS_SET", frozenset({"@timestamp", "kibana.alert.severity"}))
+
+    with pytest.raises(HTTPException, match="Filtering unavailable"):
+        asyncio.run(api_module.kibana_alerts("token", None, "Rule 1", None))
 
 
 def test_health_reports_degraded_status(api_module, monkeypatch) -> None:

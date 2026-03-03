@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import importlib.metadata
 from contextlib import asynccontextmanager
-from typing import TYPE_CHECKING, Annotated
+from typing import TYPE_CHECKING, Annotated, cast
 
 import elasticapm
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -12,7 +12,7 @@ from elasticapm.contrib.starlette import ElasticAPM
 from elasticsearch.dsl import Search
 from elasticsearch.dsl.query import Match
 from elasticsearch.dsl.types import MatchQuery
-from fastapi import Depends, FastAPI, HTTPException, Request, status
+from fastapi import Depends, FastAPI, HTTPException, Query, Request, status
 from fastapi.security import HTTPBearer
 
 from eqtr.apm import capture_exception, capture_span, set_custom_context
@@ -24,6 +24,109 @@ if TYPE_CHECKING:
     from collections.abc import AsyncIterator
 
 logger = get_logger(__name__)
+
+ALERT_QUERY_FIELDS = tuple(SETTINGS.elasticsearch.query_fields)
+ALERT_QUERY_FIELDS_SET = frozenset(ALERT_QUERY_FIELDS)
+_MISSING = object()
+FILTERABLE_FIELDS = {
+    "rule_name": "kibana.alert.rule.name",
+    "severity": "kibana.alert.severity",
+}
+
+
+def _parse_requested_fields(fields: str | None) -> tuple[str, ...] | None:
+    if fields is None:
+        return None
+
+    parsed_fields = tuple(dict.fromkeys(field.strip() for field in fields.split(",") if field.strip()))
+    if not parsed_fields:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="At least one valid field is required")
+
+    unknown_fields = [field for field in parsed_fields if field not in ALERT_QUERY_FIELDS_SET]
+    if unknown_fields:
+        allowed_fields = ", ".join(ALERT_QUERY_FIELDS)
+        unknown_fields_str = ", ".join(unknown_fields)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported fields: {unknown_fields_str}. Allowed fields: {allowed_fields}",
+        )
+
+    return parsed_fields
+
+
+def _get_nested_value(data: dict[str, object], dotted_path: str) -> object:
+    current: object = data
+    for key in dotted_path.split("."):
+        if not isinstance(current, dict):
+            return _MISSING
+
+        current_dict = cast("dict[str, object]", current)
+        if key not in current_dict:
+            return _MISSING
+
+        current = current_dict[key]
+    return current
+
+
+def _set_nested_value(target: dict[str, object], dotted_path: str, value: object) -> None:
+    keys = dotted_path.split(".")
+    current = target
+    for key in keys[:-1]:
+        nested_obj = current.get(key)
+        if isinstance(nested_obj, dict):
+            nested = cast("dict[str, object]", nested_obj)
+        else:
+            nested = {}
+            current[key] = nested
+
+        current = nested
+    current[keys[-1]] = value
+
+
+def _project_alert(alert: dict[str, object], requested_fields: tuple[str, ...]) -> dict[str, object]:
+    projected: dict[str, object] = {}
+    for field in requested_fields:
+        value = _get_nested_value(alert, field)
+        if value is not _MISSING:
+            _set_nested_value(projected, field, value)
+    return projected
+
+
+def _validate_filterable_fields(selected_filters: dict[str, str]) -> None:
+    unavailable = [
+        FILTERABLE_FIELDS[filter_name]
+        for filter_name in selected_filters
+        if FILTERABLE_FIELDS[filter_name] not in ALERT_QUERY_FIELDS_SET
+    ]
+    if unavailable:
+        unavailable_str = ", ".join(unavailable)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Filtering unavailable for fields not present in ES_QUERY_FIELDS: {unavailable_str}",
+        )
+
+
+def _normalize_filter_value(name: str, value: str | None) -> str | None:
+    if value is None:
+        return None
+
+    normalized = value.strip()
+    if normalized:
+        return normalized
+
+    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{name} must be non-empty")
+
+
+def _filter_alerts(alerts: list[dict[str, object]], selected_filters: dict[str, str]) -> list[dict[str, object]]:
+    if not selected_filters:
+        return alerts
+
+    filter_paths = {FILTERABLE_FIELDS[name]: value for name, value in selected_filters.items()}
+    return [
+        alert
+        for alert in alerts
+        if all(_get_nested_value(alert, path) == expected for path, expected in filter_paths.items())
+    ]
 
 
 async def refresh_data() -> None:
@@ -124,13 +227,33 @@ def verify_token(request: Request) -> bool:
 
 
 @app.get("/kibana/alerts")
-async def kibana_alerts(_: Annotated[str, Depends(verify_token)]) -> list[dict]:
+async def kibana_alerts(
+    _: Annotated[str, Depends(verify_token)],
+    fields: Annotated[str | None, Query()] = None,
+    rule_name: Annotated[str | None, Query()] = None,
+    severity: Annotated[str | None, Query()] = None,
+) -> list[dict]:
     """Return cached Kibana alerts."""
     with capture_span("endpoint.kibana_alerts", span_type="app"):
         if app.state.health_status != "ok":
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Service degraded")
 
-        return app.state.cached_data
+        selected_filters = {
+            name: normalized
+            for name, normalized in {
+                "rule_name": _normalize_filter_value("rule_name", rule_name),
+                "severity": _normalize_filter_value("severity", severity),
+            }.items()
+            if normalized is not None
+        }
+        _validate_filterable_fields(selected_filters)
+
+        filtered_alerts = _filter_alerts(app.state.cached_data, selected_filters)
+        requested_fields = _parse_requested_fields(fields)
+        if requested_fields is None:
+            return filtered_alerts
+
+        return [_project_alert(alert, requested_fields) for alert in filtered_alerts]
 
 
 @app.get("/health")
