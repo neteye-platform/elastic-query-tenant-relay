@@ -41,7 +41,7 @@ async def refresh_data() -> None:
         with capture_span("refresh_data.search", span_type="db.elasticsearch"):
             search = (
                 Search(using=ELASTICSEARCH_CLIENT)
-                .index(f".alerts-security.alerts-{SETTINGS.kibana.space}")
+                .index(f".alerts-security.alerts-{SETTINGS.elasticsearch.space}")
                 .query(
                     Match(
                         "kibana.alert.workflow_status",

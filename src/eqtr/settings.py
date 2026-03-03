@@ -43,6 +43,8 @@ class _ElasticsearchSettings(_CACertsFileSettings, BaseSettings):
     )
     query_match_workflow_status: str = "open"
 
+    space: str = Field(...)
+
     @field_validator("query_fields", mode="before")
     @classmethod
     def check_query_fields(cls, data: str) -> list[str]:
@@ -51,12 +53,6 @@ class _ElasticsearchSettings(_CACertsFileSettings, BaseSettings):
             return [field.strip() for field in data.split(",")]
         msg = "query_fields must be a comma-separated string"
         raise ValueError(msg)
-
-
-class _KibanaSettings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="KBN_")
-
-    space: str = Field(...)
 
 
 class _APMSettings(_CACertsFileSettings, BaseSettings):
@@ -108,7 +104,6 @@ class MainSettings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="EQTR_")
 
     elasticsearch: _ElasticsearchSettings = _ElasticsearchSettings()
-    kibana: _KibanaSettings = _KibanaSettings()
     apm: _APMSettings = _APMSettings()
 
     auth_bearer_token: str = Field(...)
