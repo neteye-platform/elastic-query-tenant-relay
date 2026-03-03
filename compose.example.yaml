@@ -1,0 +1,13 @@
+services:
+  eqtr:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - ES_URL=https://elasticsearch:9200
+      - ES_API_KEY=your_api_key_here
+      - ES_CA_CERTS_FILE_PATH=/data/ca.crt
+      - ES_SPACE=default
+      - EQTR_AUTH_BEARER_TOKEN=your_bearer_token_here
+    volumes:
+      - ./ca.crt:/data/ca.crt:ro
