@@ -76,7 +76,12 @@ class _APMSettings(_CACertsFileSettings, BaseSettings):
 
         Also, if enable is not explicitly set, if any of the APM settings are provided, we will assume APM is enabled.
         """
-        self.enabled = self.enabled or any([self.service_name, self.secret_token, self.server_url, self.environment])
+        # Override enabled to True if any of the APM settings are provided, otherwise keep it as is (which could be None
+        # or False)
+        if self.enabled is None:
+            self.enabled = self.enabled or any(
+                [self.service_name, self.secret_token, self.server_url, self.environment],
+            )
 
         if self.enabled:
             missing_fields = []

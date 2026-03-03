@@ -1,5 +1,7 @@
 """REST API for Kibana alerts."""
 
+from __future__ import annotations
+
 import importlib.metadata
 from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, Annotated
@@ -115,7 +117,7 @@ def verify_token(request: Request) -> bool:
 
         token = auth_header.split(" ")[1]
         if token != SETTINGS.auth_bearer_token:
-            logger.debug("Unauthorized access attempt with invalid token", extra={"provided_token": token})
+            logger.debug("Unauthorized access attempt with invalid token", extra={"token_length": len(token)})
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
         return True
