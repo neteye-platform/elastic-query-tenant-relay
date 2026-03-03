@@ -6,7 +6,7 @@ FastAPI service.
 
 ## What It Does
 
-- Fetches alerts from `.alerts-security.alerts-{KBN_SPACE}`
+- Fetches alerts from `.alerts-security.alerts-{ES_SPACE}`
 - Filters by workflow status (default `open`)
 - Caches results in memory and serves them via API
 - Protects alert endpoint with a bearer token
@@ -40,7 +40,7 @@ docker compose up --build
 | ------------------------ | ----------------------------------------- |
 | `ES_URL`                 | Elasticsearch base URL                    |
 | `ES_API_KEY`             | Elasticsearch API key                     |
-| `KBN_SPACE`              | Kibana space name                         |
+| `ES_SPACE`               | Elasticsearch space name                  |
 | `EQTR_AUTH_BEARER_TOKEN` | Bearer token required by `/kibana/alerts` |
 
 ### Optional Elasticsearch Query Settings

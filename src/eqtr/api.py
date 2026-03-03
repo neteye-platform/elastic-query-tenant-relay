@@ -144,7 +144,7 @@ async def refresh_data() -> None:
         with capture_span("refresh_data.search", span_type="db.elasticsearch"):
             search = (
                 Search(using=ELASTICSEARCH_CLIENT)
-                .index(f".alerts-security.alerts-{SETTINGS.kibana.space}")
+                .index(f".alerts-security.alerts-{SETTINGS.elasticsearch.space}")
                 .query(
                     Match(
                         "kibana.alert.workflow_status",
@@ -218,7 +218,17 @@ def verify_token(request: Request) -> bool:
                 detail="Missing or invalid Authorization header",
             )
 
-        token = auth_header.split(" ")[1]
+        try:
+            token = auth_header.split(" ")[1].lstrip()
+        except IndexError as e:
+            logger.debug(
+                "Unauthorized access attempt with malformed Authorization header",
+                extra={"auth_header": auth_header},
+            )
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Malformed Authorization header",
+            ) from e
         if token != SETTINGS.auth_bearer_token:
             logger.debug("Unauthorized access attempt with invalid token", extra={"token_length": len(token)})
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
