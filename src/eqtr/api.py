@@ -133,14 +133,67 @@ def verify_token(request: Request) -> bool:
         return True
 
 
+def _get_nested_value(data: dict, field_path: str) -> object:
+    """Retrieve a nested value from a dictionary using dot notation.
+
+    This is needed because values returned from Elasticsearch can be nested.
+    """
+    if field_path in data:
+        return data[field_path]
+
+    parts = field_path.split(".")
+    current: object = data
+    missing = object()
+
+    for part in parts:
+        if not isinstance(current, dict):
+            return missing
+        current = current.get(part, missing)
+        if current is missing:
+            return missing
+
+    return current
+
+
+def _matches_filter(data: dict, field_name: str, expected_value: str) -> bool:
+    field_value = _get_nested_value(data, field_name)
+    if isinstance(field_value, list):
+        return any(str(value) == expected_value for value in field_value)
+    return str(field_value) == expected_value
+
+
 @app.get("/kibana/alerts")
-async def kibana_alerts(_: Annotated[str, Depends(verify_token)]) -> list[dict]:
+async def kibana_alerts(request: Request, _: Annotated[bool, Depends(verify_token)]) -> list[dict]:
     """Return cached Kibana alerts."""
     with capture_span("endpoint.kibana_alerts", span_type="app"):
         if app.state.health_status != "ok":
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Service degraded")
 
-        return app.state.cached_data
+        filters = dict(request.query_params)
+        if not filters:
+            return app.state.cached_data
+
+        allowed_fields = set(SETTINGS.elasticsearch.query_fields)
+        unknown_fields = sorted(field for field in filters if field not in allowed_fields)
+
+        if unknown_fields:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={
+                    "error": "Unsupported filter fields",
+                    "unsupported_fields": unknown_fields,
+                    "allowed_fields": sorted(allowed_fields),
+                },
+            )
+
+        with capture_span("endpoint.kibana_alerts.filtering", span_type="app"):
+            return [
+                alert
+                for alert in app.state.cached_data
+                if all(
+                    _matches_filter(alert, field_name, expected_value) for field_name, expected_value in filters.items()
+                )
+            ]
 
 
 @app.get("/health")

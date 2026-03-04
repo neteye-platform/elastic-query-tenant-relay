@@ -24,6 +24,18 @@ curl -H "Authorization: Bearer $EQTR_AUTH_BEARER_TOKEN" \
   http://localhost:8000/kibana/alerts
 ```
 
+You can also filter alerts with query parameters whose names match configured
+`ES_QUERY_FIELDS`. For example, if `host.hostname` is included in
+`ES_QUERY_FIELDS`, you can request:
+
+```bash
+curl -H "Authorization: Bearer $EQTR_AUTH_BEARER_TOKEN" \
+  "http://localhost:8000/kibana/alerts?host.hostname=web-01"
+```
+
+If you send a filter for a field that is not present in `ES_QUERY_FIELDS`, the
+API returns `400 Bad Request`.
+
 ## Run with Docker
 
 The recommended way to run `eqtr` is with Docker.
