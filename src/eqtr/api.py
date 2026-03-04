@@ -163,7 +163,7 @@ def _matches_filter(data: dict, field_name: str, expected_value: str) -> bool:
 
 
 @app.get("/kibana/alerts")
-async def kibana_alerts(request: Request, _: Annotated[str, Depends(verify_token)]) -> list[dict]:
+async def kibana_alerts(request: Request, _: Annotated[bool, Depends(verify_token)]) -> list[dict]:
     """Return cached Kibana alerts."""
     with capture_span("endpoint.kibana_alerts", span_type="app"):
         if app.state.health_status != "ok":
