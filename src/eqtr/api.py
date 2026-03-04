@@ -136,7 +136,7 @@ def verify_token(request: Request) -> bool:
 def _get_nested_value(data: dict, field_path: str) -> object:
     """Retrieve a nested value from a dictionary using dot notation.
 
-    This is needed because values returnedElasticsearch fields can be nested.
+    This is needed because values returned from Elasticsearch can be nested.
     """
     if field_path in data:
         return data[field_path]
