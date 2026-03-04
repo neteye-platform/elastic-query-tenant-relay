@@ -140,6 +140,20 @@ def test_kibana_alerts_filters_by_flat_dotted_field_key(api_module, monkeypatch)
     assert result == [{"host.hostname": "web-02", "kibana": {"alert": {"rule": {"name": "B"}}}}]
 
 
+def test_kibana_alerts_filters_when_field_value_is_list(api_module, monkeypatch) -> None:
+    monkeypatch.setattr(api_module.SETTINGS.elasticsearch, "query_fields", ["tags", "kibana.alert.rule.name"])
+    api_module.app.state.health_status = "ok"
+    api_module.app.state.cached_data = [
+        {"tags": ["dev", "staging"], "kibana": {"alert": {"rule": {"name": "A"}}}},
+        {"tags": ["prod", "critical"], "kibana": {"alert": {"rule": {"name": "B"}}}},
+    ]
+    request = _build_request([], query_string=b"tags=prod")
+
+    result = asyncio.run(api_module.kibana_alerts(request, "token"))
+
+    assert result == [{"tags": ["prod", "critical"], "kibana": {"alert": {"rule": {"name": "B"}}}}]
+
+
 def test_kibana_alerts_returns_400_for_unsupported_filter_field(api_module, monkeypatch) -> None:
     monkeypatch.setattr(api_module.SETTINGS.elasticsearch, "query_fields", ["host.hostname"])
     api_module.app.state.health_status = "ok"
