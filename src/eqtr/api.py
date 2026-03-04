@@ -186,11 +186,14 @@ async def kibana_alerts(request: Request, _: Annotated[bool, Depends(verify_toke
                 },
             )
 
-        return [
-            alert
-            for alert in app.state.cached_data
-            if all(_matches_filter(alert, field_name, expected_value) for field_name, expected_value in filters.items())
-        ]
+        with capture_span("endpoint.kibana_alerts.filtering", span_type="app"):
+            return [
+                alert
+                for alert in app.state.cached_data
+                if all(
+                    _matches_filter(alert, field_name, expected_value) for field_name, expected_value in filters.items()
+                )
+            ]
 
 
 @app.get("/health")
