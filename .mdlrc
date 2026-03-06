@@ -1,3 +1,0 @@
-all
-# Ignore line length for markdown tables, as they are often very long and hard to break up
-exclude_rule 'MD013'
