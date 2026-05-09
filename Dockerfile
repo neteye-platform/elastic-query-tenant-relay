@@ -1,7 +1,7 @@
 # From example at: https://github.com/astral-sh/uv-docker-example/blob/main/multistage.Dockerfile
 
 # Build app dependencies
-FROM python:3.14.4-slim-bookworm@sha256:a28fb284c750940c714dba2e0cf5a26e5121c3c5ed06e9ca8bcfeaaba701b614 AS builder
+FROM python:3.14.4-slim-bookworm@sha256:fc74d22ffd0d5ac395a4b7bdda75a4539758862c49ebf3005647084631e63789 AS builder
 WORKDIR /app
 
 RUN apt-get update \
@@ -28,7 +28,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-dev --no-editable --reinstall-package=eqtr
 
 # Copy app to runtime stage
-FROM python:3.14.4-slim-bookworm@sha256:a28fb284c750940c714dba2e0cf5a26e5121c3c5ed06e9ca8bcfeaaba701b614
+FROM python:3.14.4-slim-bookworm@sha256:fc74d22ffd0d5ac395a4b7bdda75a4539758862c49ebf3005647084631e63789
 WORKDIR /app
 
 RUN apt-get update \
