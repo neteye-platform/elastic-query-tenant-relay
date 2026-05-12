@@ -12,13 +12,13 @@ requires-python = ">=3.14"
 dependencies = [
     "apscheduler==3.11.2",
     "elastic-apm==6.25.0",
-    "elasticsearch==9.3.0",
+    "elasticsearch==9.4.0",
     "fastapi==0.136.1",
-    "pydantic-settings==2.14.0",
+    "pydantic-settings==2.14.1",
     "uvicorn==0.46.0",
 ]
 [dependency-groups]
-dev = ["prek==0.3.11", "pytest==9.0.3", "ruff==0.15.12", "ty==0.0.33"]
+dev = ["prek==0.3.13", "pytest==9.0.3", "ruff==0.15.12", "ty==0.0.35"]
 
 [build-system]
 requires = ["hatchling", "hatch-vcs"]
