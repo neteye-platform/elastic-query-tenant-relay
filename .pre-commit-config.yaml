@@ -42,7 +42,7 @@ repos:
       - id: codespell
 
   - repo: https://github.com/rhysd/actionlint
-    rev: 393031adb9afb225ee52ae2ccd7a5af5525e03e8 # frozen: v1.7.11
+    rev: 914e7df21a07ef503a81201c76d2b11c789d3fca # frozen: v1.7.12
     hooks:
       - id: actionlint
 
@@ -52,7 +52,7 @@ repos:
       - id: shellcheck
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: aca6d4c8045a504e2812ea4bedff1d0a09e437bc # frozen: v0.15.8
+    rev: 6fec9b7edb08fd9989088709d864a7826dc74e80 # frozen: v0.15.12
     hooks:
       - id: ruff-check
         args:
@@ -60,12 +60,12 @@ repos:
       - id: ruff-format
 
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 20d6e6698b00aed95d4f269a6309b11c2c57b202 # frozen: 0.11.2
+    rev: 659a7789596d520c849e9c96525119e9fbaa731f # frozen: 0.11.8
     hooks:
       - id: uv-lock
 
   - repo: https://github.com/ansible/ansible-lint
-    rev: 8ba9595a4acd1b906eb75568b34f6ef592cd1528 # frozen: v26.3.0
+    rev: 5fac056c45595896c973fbde871f01f6cb14d74c # frozen: v26.4.0
     hooks:
       - id: ansible-lint
 
@@ -75,12 +75,12 @@ repos:
       - id: hadolint-docker
 
   - repo: https://github.com/DavidAnson/markdownlint-cli2
-    rev: 3766ad839ad3a74558031510b3bc9872bb1d9980 # frozen: v0.22.0
+    rev: 996abf60411a8d954288ac9856aae7602b80cbda # frozen: v0.22.1
     hooks:
       - id: markdownlint-cli2
 
   - repo: https://github.com/renovatebot/pre-commit-hooks
-    rev: 1145b933044dbe7f7c9b79c2c3030403cda41bca # frozen: 43.95.0
+    rev: cbf190d5e31b9e0845b3fb1c0af190927b46e5e3 # frozen: 43.141.2
     hooks:
       - id: renovate-config-validator
         args: [--strict]
