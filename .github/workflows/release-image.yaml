@@ -14,7 +14,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-
     uses: neteye-platform/repo-commons/.github/workflows/build-docker-image.yaml@780b87e69d8b7d2b46ddec36a674f24218d81022 # main
     secrets: inherit
     with:
@@ -23,7 +22,8 @@ jobs:
       image-name: ${{ github.event.repository.name }}
       push: true
 
-  release:
+  release-image:
+    name: Release Image
     runs-on: ubuntu-latest
     needs: build-docker-image
     permissions:
