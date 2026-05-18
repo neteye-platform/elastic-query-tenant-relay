@@ -14,7 +14,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    uses: neteye-platform/repo-commons/.github/workflows/build-docker-image.yaml@780b87e69d8b7d2b46ddec36a674f24218d81022 # main
+    uses: neteye-platform/repo-commons/.github/workflows/build-docker-image.yaml@fd7026206538cfcb618fa7a69197572a16d5a8a0 # main
     secrets: inherit
     with:
       working-directory: .
