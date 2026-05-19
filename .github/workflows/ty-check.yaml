@@ -3,7 +3,7 @@ name: TY Check
 on:
   pull_request:
     branches:
-      - "*"
+      - "**"
 
 permissions:
   contents: read
