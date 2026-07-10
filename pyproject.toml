@@ -10,15 +10,15 @@ authors = [
 ]
 requires-python = ">=3.14"
 dependencies = [
-    "apscheduler==3.11.2",
-    "elastic-apm==6.25.0",
-    "elasticsearch==9.4.0",
-    "fastapi==0.136.1",
+    "apscheduler==3.11.3",
+    "elastic-apm==6.26.2",
+    "elasticsearch==9.4.1",
+    "fastapi==0.139.0",
     "pydantic-settings==2.14.2",
-    "uvicorn==0.46.0",
+    "uvicorn==0.51.0",
 ]
 [dependency-groups]
-dev = ["prek==0.3.13", "pytest==9.0.3", "ruff==0.15.12", "ty==0.0.35"]
+dev = ["prek==0.4.8", "pytest==9.1.1", "ruff==0.15.21", "ty==0.0.58"]
 
 [build-system]
 requires = ["hatchling", "hatch-vcs"]
