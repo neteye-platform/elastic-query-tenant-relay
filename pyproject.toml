@@ -14,7 +14,7 @@ dependencies = [
     "elastic-apm==6.25.0",
     "elasticsearch==9.4.0",
     "fastapi==0.136.1",
-    "pydantic-settings==2.14.1",
+    "pydantic-settings==2.14.2",
     "uvicorn==0.46.0",
 ]
 [dependency-groups]
