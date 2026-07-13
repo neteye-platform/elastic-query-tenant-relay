@@ -46,7 +46,7 @@ COPY --from=builder /app/.venv /app/.venv
 # Place executables in the environment at the front of the path
 ENV PATH="/app/.venv/bin:$PATH"
 
-HEALTHCHECK CMD ["curl", "-f", "http://localhost:8000/health"]
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 CMD ["curl", "-f", "http://localhost:8000/health"]
 
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
-CMD ["/bin/sh", "-c", "eqtr"]
+CMD ["eqtr"]
