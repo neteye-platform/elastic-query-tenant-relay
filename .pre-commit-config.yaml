@@ -37,7 +37,7 @@ repos:
       - id: gitleaks
 
   - repo: https://github.com/codespell-project/codespell
-    rev: 2ccb47ff45ad361a21071a7eedda4c37e6ae8c5a # frozen: v2.4.2
+    rev: 57b21406f092110c18776e39b0bda50d37c945c8 # frozen: v2.4.3
     hooks:
       - id: codespell
 
@@ -52,7 +52,7 @@ repos:
       - id: shellcheck
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 01a675ea018f2fb714478a5ffb83fcea8374bb06 # frozen: v0.15.21
+    rev: 321478e58f4938179c6b86e4ddfa923d1547a49b # frozen: v0.16.6
     hooks:
       - id: ruff-check
         args:
@@ -60,33 +60,33 @@ repos:
       - id: ruff-format
 
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: d9fca3320346514799461a80b0753eb45d707d46 # frozen: 0.11.28
+    rev: 7720020191168f707a43279c65b6bf9cdf7ed04e # frozen: 0.12.10
     hooks:
       - id: uv-lock
 
   - repo: https://github.com/astral-sh/ty-pre-commit
-    rev: d69b804e5f355d9ec0d5b3c9bcfb4e694dc3d412 # frozen: v0.0.49
+    rev: 743d21e292f7a36ed70cc2318aa3c8711b1e0437 # frozen: v0.0.78
     hooks:
       - id: ty
         args: [--isolated, --no-python-downloads, --no-cache]
 
   - repo: https://github.com/ansible/ansible-lint
-    rev: 262624cd0ab22a4221293216856c59671ce7aa5e # frozen: v26.6.0
+    rev: 665d9e07a1943254d2910faffc106adaf7ea7294 # frozen: v26.8.0
     hooks:
       - id: ansible-lint
 
   - repo: https://github.com/hadolint/hadolint
-    rev: 57e1618d78fd469a92c1e584e8c9313024656623 # frozen: v2.14.0
+    rev: 2eece55955ced00200be9729e9728cb7dacca505 # frozen: v2.15.1
     hooks:
       - id: hadolint-docker
 
   - repo: https://github.com/DavidAnson/markdownlint-cli2
-    rev: 534166213006ec869b773b7ed8c6ebeaad1165d0 # frozen: v0.23.0
+    rev: b82a6c8896e491b9cb377a99ff3412131920681b # frozen: v0.23.2
     hooks:
       - id: markdownlint-cli2
 
   - repo: https://github.com/renovatebot/pre-commit-hooks
-    rev: f77230f094506bc95fd13b618a9e6b81e312b309 # frozen: 43.257.2
+    rev: bf252c92d5fccab3ce0b7e1f7ad1ca8615338465 # frozen: 43.288.0
     hooks:
       - id: renovate-config-validator
         args: [--strict]
