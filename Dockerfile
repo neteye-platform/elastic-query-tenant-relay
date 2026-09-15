@@ -38,8 +38,9 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user to run the app
-RUN useradd -m appuser
-USER appuser
+RUN groupadd --gid 10001 appuser \
+    && useradd --create-home --uid 10001 --gid 10001 appuser
+USER 10001:10001
 
 COPY --from=builder /app/.venv /app/.venv
 
