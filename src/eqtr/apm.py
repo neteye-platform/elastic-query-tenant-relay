@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Würth IT Italy S.r.l.
 """APM instrumentation helpers with disabled-mode no-op behavior."""
 
 from contextlib import AbstractContextManager, nullcontext

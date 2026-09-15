@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Würth IT Italy S.r.l.
 """Application settings management using Pydantic."""
 
 import logging

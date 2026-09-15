@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Würth IT Italy S.r.l.
 from contextlib import nullcontext
 
 from eqtr import apm

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Würth IT Italy S.r.l.
 """REST API for Kibana alerts."""
 
 from __future__ import annotations
