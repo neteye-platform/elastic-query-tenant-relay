@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Würth IT Italy S.r.l.
 """Logging configuration for the application."""
 
 import logging

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Würth IT Italy S.r.l.
 """Main entry point for the application."""
 
 import uvicorn

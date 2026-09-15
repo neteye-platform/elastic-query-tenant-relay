@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Würth IT Italy S.r.l.
 import asyncio
 import importlib
 from types import SimpleNamespace
