@@ -4,10 +4,11 @@
 FROM python:3.14.7-slim-bookworm@sha256:9ab8d9c8514b44f90cf0029dd42fdd7e9e211e639c8b995304cc04568dee900f AS builder
 WORKDIR /app
 
+# hadolint ignore=DL3008
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     # Needed by hatch-vcs
-    git=1:2.39.5-0+deb12u3 \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
 ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
@@ -31,10 +32,11 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 FROM python:3.14.7-slim-bookworm@sha256:9ab8d9c8514b44f90cf0029dd42fdd7e9e211e639c8b995304cc04568dee900f
 WORKDIR /app
 
+# hadolint ignore=DL3008
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-    dumb-init=1.2.5-2 \
-    curl=7.88.1-10+deb12u14 \
+    curl \
+    dumb-init \
     && rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user to run the app
