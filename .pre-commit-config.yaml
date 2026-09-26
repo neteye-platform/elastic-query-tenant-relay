@@ -52,7 +52,7 @@ repos:
       - id: shellcheck
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 2eeb5678de71a00c0902cbda7105d328432f72cb # frozen: v0.16.8
+    rev: a56c0b927e6465d37cae3e97d35d4d18ab2b96cd # frozen: v0.16.9
     hooks:
       - id: ruff-check
         args:
@@ -60,18 +60,18 @@ repos:
       - id: ruff-format
 
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 17a6b18b8006d390e476d419631aae885cadfa40 # frozen: 0.12.17
+    rev: 2aeb804518b4373dbf5adb8dddc5466d9a6e6b21 # frozen: 0.12.19
     hooks:
       - id: uv-lock
 
   - repo: https://github.com/astral-sh/ty-pre-commit
-    rev: e7729e08f9d338183032340a067053ca5e16e6a8 # frozen: v0.0.82
+    rev: 6972e4c5a7e9f45f05a2f30b668f221f43b770c9 # frozen: v0.0.84
     hooks:
       - id: ty
         args: [--isolated, --no-python-downloads, --no-cache]
 
   - repo: https://github.com/ansible/ansible-lint
-    rev: 665d9e07a1943254d2910faffc106adaf7ea7294 # frozen: v26.8.0
+    rev: e7f397ad6dfa20d274afa17cd7bbedd84ed136f5 # frozen: v26.9.0
     hooks:
       - id: ansible-lint
 
@@ -86,7 +86,7 @@ repos:
       - id: markdownlint-cli2
 
   - repo: https://github.com/renovatebot/pre-commit-hooks
-    rev: c3e0f8c95092a028bc4a61dcf81ad7b2b4ae4c88 # frozen: 44.105.4
+    rev: b1fe0152256382b165481fd3e8277f753bf73c95 # frozen: 44.115.10
     hooks:
       - id: renovate-config-validator
         args: [--strict]
