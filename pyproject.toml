@@ -15,10 +15,10 @@ dependencies = [
     "elasticsearch==9.5.1",
     "fastapi==0.141.1",
     "pydantic-settings==2.15.0",
-    "uvicorn==0.53.0",
+    "uvicorn==0.54.0",
 ]
 [dependency-groups]
-dev = ["prek==0.5.3", "pytest==9.1.1", "ruff==0.16.8", "ty==0.0.82"]
+dev = ["prek==0.5.3", "pytest==9.1.1", "ruff==0.16.9", "ty==0.0.84"]
 
 [build-system]
 requires = ["hatchling", "hatch-vcs"]
