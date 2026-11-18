@@ -22,7 +22,7 @@ from eqtr.log import get_logger
 from eqtr.settings import SETTINGS
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncIterator
+    from collections.abc import AsyncGenerator
 
 logger = get_logger(__name__)
 
@@ -83,7 +83,7 @@ async def refresh_data() -> None:
 
 
 @asynccontextmanager
-async def _lifespan(_: FastAPI) -> AsyncIterator[None]:
+async def _lifespan(_: FastAPI) -> AsyncGenerator[None]:
     scheduler = AsyncIOScheduler()
     scheduler.add_job(refresh_data, "interval", minutes=SETTINGS.refresh_interval_minutes)
     scheduler.start()
